@@ -2,7 +2,6 @@ return {
   {
     "stevearc/overseer.nvim",
     cmd = { "OverseerRun", "OverseerToggle", "OverseerOpen", "OverseerClose", "OverseerInfo" },
-    enabled = false,
     opts = {
       task_list = {
         default_detail = 2,
