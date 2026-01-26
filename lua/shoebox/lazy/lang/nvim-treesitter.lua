@@ -1,3 +1,5 @@
+local vim = vim
+
 return {
   {
     "nvim-treesitter/nvim-treesitter",
@@ -37,40 +39,55 @@ return {
         end, 1000)
       end)
 
+      -- Helper function to start treesitter for a buffer
+      local function start_treesitter(bufnr, filetype)
+        local ignored_fts = {
+          "snacks_dashboard",
+          "snacks_notif",
+          "snacks_input",
+          "prompt",
+          "fidget",
+        }
+
+        if vim.tbl_contains(ignored_fts, filetype) then
+          return
+        end
+
+        local lang = vim.treesitter.language.get_lang(filetype) or filetype
+        local has_parser = pcall(vim.treesitter.language.add, lang)
+
+        if has_parser then
+          pcall(vim.treesitter.start, bufnr)
+          vim.bo[bufnr].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        elseif not installation_complete then
+          -- If installation is still in progress, retry after a delay
+          vim.defer_fn(function()
+            if vim.api.nvim_buf_is_valid(bufnr) then
+              local retry_has_parser = pcall(vim.treesitter.language.add, lang)
+              if retry_has_parser then
+                pcall(vim.treesitter.start, bufnr)
+                vim.bo[bufnr].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+              end
+            end
+          end, 500)
+        end
+      end
+
       -- Enable treesitter highlighting for supported filetypes
       vim.api.nvim_create_autocmd({ "FileType" }, {
         callback = function(event)
-          local ignored_fts = {
-            "snacks_dashboard",
-            "snacks_notif",
-            "snacks_input",
-            "prompt",
-            "fidget",
-          }
+          start_treesitter(event.buf, event.match)
+        end,
+      })
 
-          if vim.tbl_contains(ignored_fts, event.match) then
-            return
-          end
-
-          -- Check if parser is installed before trying to start treesitter
-          local lang = vim.treesitter.language.get_lang(event.match) or event.match
-          local has_parser = pcall(vim.treesitter.language.add, lang)
-
-          if has_parser then
-            pcall(vim.treesitter.start, event.buf)
-            vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-          elseif not installation_complete then
-            -- If installation is still in progress, retry after a delay
-            vim.defer_fn(function()
-              if vim.api.nvim_buf_is_valid(event.buf) then
-                local retry_has_parser = pcall(vim.treesitter.language.add, lang)
-                if retry_has_parser then
-                  pcall(vim.treesitter.start, event.buf)
-                  vim.bo[event.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-                end
-              end
-            end, 500)
-          end
+      -- Re-attach treesitter when file is changed externally (e.g., by AI tools)
+      vim.api.nvim_create_autocmd({ "FileChangedShellPost" }, {
+        callback = function(event)
+          -- Stop any existing treesitter instance
+          pcall(vim.treesitter.stop, event.buf)
+          -- Restart treesitter
+          local ft = vim.bo[event.buf].filetype
+          start_treesitter(event.buf, ft)
         end,
       })
     end,
