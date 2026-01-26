@@ -1,7 +1,7 @@
 return {
   {
     "nvim-mini/mini.hipatterns",
-    event = "VeryLazy",
+    event = "BufReadPre",
     opts = {
       highlighters = {
         -- Highlight standalone 'FIXME', 'HACK', 'TODO', 'NOTE'
@@ -18,36 +18,36 @@ return {
         nolint = { pattern = "//nolint:", group = "MiniHipattersNote" },
       },
     },
-    {
-      "nvim-mini/mini.align",
-      opts = {},
-      keys = {
-        { "ga", mode = { "n", "v" }, desc = "Align" },
-        { "gA", mode = { "n", "v" }, desc = "Align with preview" },
+  },
+  {
+    "nvim-mini/mini.align",
+    opts = {},
+    keys = {
+      { "ga", mode = { "n", "v" }, desc = "Align" },
+      { "gA", mode = { "n", "v" }, desc = "Align with preview" },
+    },
+  },
+  {
+    "nvim-mini/mini.comment",
+    opts = {
+      mappings = {
+        -- Toggle comment (like `gcip` - comment inner paragraph) for both
+        -- Normal and Visual modes
+        comment = "<leader>/",
+
+        -- Toggle comment on current line
+        comment_line = "<leader>/",
+
+        -- Toggle comment on visual selection
+        comment_visual = "<leader>/",
+
+        -- Define 'comment' textobject (like `dgc` - delete whole comment block)
+        -- Works also in Visual mode if mapping differs from `comment_visual`
+        textobject = "gc",
       },
     },
-    {
-      "nvim-mini/mini.comment",
-      opts = {
-        mappings = {
-          -- Toggle comment (like `gcip` - comment inner paragraph) for both
-          -- Normal and Visual modes
-          comment = "<leader>/",
-
-          -- Toggle comment on current line
-          comment_line = "<leader>/",
-
-          -- Toggle comment on visual selection
-          comment_visual = "<leader>/",
-
-          -- Define 'comment' textobject (like `dgc` - delete whole comment block)
-          -- Works also in Visual mode if mapping differs from `comment_visual`
-          textobject = "gc",
-        },
-      },
-      keys = {
-        { "<leader>/", mode = { "n", "v" }, desc = "Comment line or visual selection" },
-      },
+    keys = {
+      { "<leader>/", mode = { "n", "v" }, desc = "Comment line or visual selection" },
     },
   },
   -- {
@@ -83,9 +83,11 @@ return {
   {
     "nvim-mini/mini.splitjoin",
     opts = {
-      toggle = "st",
-      split = "ss",
-      join = "sj",
+      mappings = {
+        toggle = "st",
+        split = "ss",
+        join = "sj",
+      },
     },
     keys = {
       { "st", mode = { "n", "v" }, desc = "Split/Join toggle" },
@@ -95,7 +97,24 @@ return {
   },
   {
     "nvim-mini/mini.trailspace",
-    event = "VeryLazy",
     opts = {},
+    keys = {
+      {
+        "<leader>ts",
+        mode = { "n", "v" },
+        desc = "Trim trailing space",
+        function()
+          MiniTrailspace.trim()
+        end,
+      },
+      {
+        "<leader>tl",
+        mode = { "n", "v" },
+        desc = "Trim trailing space last lines",
+        function()
+          MiniTrailspace.trim_last_lines()
+        end,
+      },
+    },
   },
 }
