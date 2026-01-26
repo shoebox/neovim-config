@@ -1,7 +1,7 @@
 return {
   {
     "j-hui/fidget.nvim",
-    event = "BufEnter",
+    event = "UIEnter",
     branch = "main",
     config = function()
       require("shoebox.extras.shoeboxfidget").setup_fidget()
