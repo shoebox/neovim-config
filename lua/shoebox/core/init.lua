@@ -1,0 +1,5 @@
+require("shoebox.core.abbrev")
+require("shoebox.core.autocmd")
+require("shoebox.core.filetype")
+require("shoebox.core.global")
+require("shoebox.core.options")
