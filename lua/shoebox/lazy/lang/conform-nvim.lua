@@ -26,6 +26,7 @@ return {
             "gopls",
             "goimports-reviser",
           },
+          ["http"] = {},
           ["lua"] = { "stylua" },
           ["nix"] = { "alejandra", "nixfmt", "nixpkgs_fmt" },
           -- ["tf"] = {
