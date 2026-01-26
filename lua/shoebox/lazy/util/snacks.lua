@@ -1,13 +1,11 @@
 return {
   {
     "folke/snacks.nvim",
-    lazy = true,
+    priority = 1000,
+    lazy = false,
     opts = {
       indent = {
-        chunk = {
-          enabled = false,
-        },
-        scope = {},
+        char = "╎",
         enabled = true,
         animate = {
           enabled = false,
