@@ -1,28 +1,3 @@
-local function prompt_library()
-  local coding = require("shoebox.llm.prompts.coding")
-  local codereview = require("shoebox.llm.prompts.codereview")
-  local commit = require("shoebox.llm.prompts.commit")
-  local docs = require("shoebox.llm.prompts.docs")
-  local refactoring = require("shoebox.llm.prompts.refactoring")
-  local unittests = require("shoebox.llm.prompts.unittests")
-  return {
-    ["Coding workflow"] = coding.Basic,
-    ["Code-review - Basic"] = codereview.Basic,
-    ["Code-review - General"] = codereview.General,
-    ["Code-review - SOLID"] = codereview.Solid,
-    ["Doc - Create article"] = docs.CreateArticle,
-    ["Doc - Rewrite article"] = docs.RewriteArticle,
-    ["Generate a commit message"] = commit.ConventionalCommit,
-    ["Refactoring - Add missing documentation"] = refactoring.MissingDoc,
-    ["Refactoring - Find better naming"] = refactoring.BetterNaming,
-    ["Refactoring - Find matching pattern"] = refactoring.MatchingPattern,
-    ["Refactoring - Optimize logging"] = refactoring.BetterLogging,
-    ["Refactoring - Optimize"] = refactoring.Optimize,
-    ["Refactoring - SOLID"] = refactoring.Solid,
-    ["Unit Tests - Gherkin test-cases"] = unittests.Gherkin,
-  }
-end
-
 vim.api.nvim_create_autocmd("BufReadPost", {
   pattern = "COMMIT_EDITMSG",
   callback = function(args)
@@ -81,7 +56,18 @@ return {
           },
         },
       },
-      prompt_library = prompt_library(),
+      prompt_library = {
+        markdown = {
+          dirs = {
+            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/",
+            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/codereview/",
+            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/commit/",
+            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/docs/",
+            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/refactoring/",
+            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/unittests/",
+          },
+        },
+      },
       display = {
         action_palette = {
           opts = {
@@ -110,10 +96,6 @@ return {
       strategies = {
         chat = {
           adapter = "auggie_cli",
-          -- adapter = {
-          --   name = "copilot",
-          --   model = "claude-sonnet-4.5",
-          -- },
           keymaps = {
             clear = {
               modes = { n = "gxx" },
