@@ -1,10 +1,6 @@
 local vim = vim
 
-vim.o.autoread = true
-
 local focus_group = vim.api.nvim_create_augroup("focus_group", {})
-
-local exclude = { "neo-tree", "kulala://ui" }
 
 local ignore_buftype = {
   "acwrite",
@@ -36,7 +32,12 @@ vim.api.nvim_create_user_command("CloseBuffersNotInWorkspace", function()
 end, { desc = "Close all buffers not into workspace" })
 
 vim.api.nvim_create_user_command("CloseBuffersExpectCurrent", function()
-  vim.cmd("%bdelete|edit#|bdelete#")
+  local current = vim.api.nvim_get_current_buf()
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if buf ~= current and vim.api.nvim_buf_is_loaded(buf) then
+      pcall(vim.api.nvim_buf_delete, buf, { force = false })
+    end
+  end
 end, { desc = "Close all buffer but current one" })
 
 vim.api.nvim_create_user_command("WipeWindowlessBufs", function()
@@ -51,6 +52,7 @@ end, { desc = "Wipeout all buffers not shown in a window" })
 
 vim.api.nvim_create_autocmd({ "BufLeave", "FocusLost" }, {
   group = focus_group,
+  once = true,
   pattern = { "*" },
   callback = function(args)
     local bufid = vim.api.nvim_get_current_buf()
@@ -82,17 +84,17 @@ vim.api.nvim_create_autocmd({ "BufLeave", "FocusLost" }, {
 })
 
 -- Show relative line number when in command mode and absolute line number in edit mode
-local function relativeln(target)
-  vim.o.number = true
-
-  if target == "number" then
-    vim.o.number = true
-    vim.o.relativenumber = false
-  else
-    vim.o.number = true
-    vim.o.relativenumber = true
-  end
-end
+-- local function relativeln(target)
+--   vim.o.number = true
+--
+--   if target == "number" then
+--     vim.o.number = true
+--     vim.o.relativenumber = false
+--   else
+--     vim.o.number = true
+--     vim.o.relativenumber = true
+--   end
+-- end
 
 -- local _group = vim.api.nvim_create_augroup("LineNumber", { clear = true })
 -- local autocmd_config = {
@@ -113,3 +115,9 @@ end
 --     group = _group,
 --   })
 -- end
+
+vim.o.autoread = true
+vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "CursorHoldI", "FocusGained" }, {
+  command = "if mode() != 'c' | checktime | endif",
+  pattern = { "*" },
+})
