@@ -3,9 +3,6 @@ local function MyColorScheme(color)
   vim.cmd.colorscheme(color)
 end
 
--- Remove the background color for LspInlayHint
-vim.api.nvim_set_hl(0, "LspInlayHint", { fg = "#969696", bg = "NONE" })
-
 return {
   {
     "eldritch-theme/eldritch.nvim",
@@ -19,6 +16,11 @@ return {
       on_highlights = function(hl, colors)
         hl.WinSeparator = { fg = colors.bg_dark, bg = nil }
         hl.VertSplit = { fg = colors.fg_gutter, bg = nil }
+        hl.BlinkCmpSource = { fg = colors.purple, bg = nil }
+
+        hl.RenderMarkdownH1Bg = { bg = colors.bg_highlight, fg = colors.yellow }
+        hl.RenderMarkdownH2Bg = { bg = colors.bg_highlight, fg = colors.cyan }
+        hl.RenderMarkdownH3Bg = { bg = colors.bg_highlight, fg = colors.purple }
 
         -- line numbers
         hl.LineNr = { fg = colors.dark5, bg = nil, bold = true }
@@ -61,6 +63,22 @@ return {
         -- indent
         hl.SnacksIndent = { fg = colors.dark5, bg = nil }
         hl.SnacksIndentScope = { fg = colors.dark_cyan, bg = nil }
+
+        -- native LSP completion menu (Pmenu)
+        hl.Pmenu = { fg = colors.fg, bg = colors.bg_dark }
+        hl.PmenuSel = { fg = colors.fg, bg = colors.bg_visual, bold = true } -- selected "name"
+        hl.PmenuKind = { fg = colors.dark_green, bg = colors.bg_dark }
+        hl.PmenuKindSel = { fg = colors.green, bg = colors.bg_visual, bold = true } -- selected "kind"
+        hl.PmenuExtra = { fg = colors.dark5, bg = colors.bg_dark }
+        hl.PmenuExtraSel = { fg = colors.fg, bg = colors.bg_visual } -- selected "extra"
+        hl.PmenuSbar = { bg = colors.bg_highlight }
+        hl.PmenuThumb = { bg = colors.purple }
+
+        -- Remove the background color for LspInlayHint
+        hl.LspInlayHint = { fg = "#969696", bg = "NONE" }
+
+        -- floatterm border
+        hl.FloatermBorder = { fg = colors.dark_cyan, bg = nil }
       end,
     },
     init = function()
