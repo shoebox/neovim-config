@@ -7,11 +7,38 @@ return {
       "nvim-tree/nvim-web-devicons",
     },
     cmd = { "Octo" },
-    config = function()
-      require("octo").setup({
-        github_hostname = "github.com",
-        ssh_aliases = { ["nbcugithub.com"] = "github.com" },
-      })
-    end,
+    keys = {
+      -- {
+      --   "<leader>oi",
+      --   "<CMD>Octo issue list<CR>",
+      --   desc = "List GitHub Issues",
+      -- },
+      {
+        "<leader>op",
+        "<CMD>Octo pr list<CR>",
+        desc = "List GitHub PullRequests",
+      },
+      -- {
+      --   "<leader>od",
+      --   "<CMD>Octo discussion list<CR>",
+      --   desc = "List GitHub Discussions",
+      -- },
+      {
+        "<leader>on",
+        "<CMD>Octo notification list<CR>",
+        desc = "List GitHub Notifications",
+      },
+      {
+        "<leader>os",
+        function()
+          require("octo.utils").create_base_search_command({ include_current_repo = true })
+        end,
+        desc = "Search GitHub",
+      },
+    },
+    opts = {
+      github_hostname = "github.com",
+      ssh_aliases = { ["nbcugithub.com"] = "github.com" },
+    },
   },
 }

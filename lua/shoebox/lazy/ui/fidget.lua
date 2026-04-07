@@ -7,20 +7,19 @@ return {
       require("shoebox.extras.shoeboxfidget").setup_fidget()
     end,
     opts = {
-      integration = {
-        ["nvim-tree"] = {
-          enable = true, -- Integrate with nvim-tree/nvim-tree.lua (if installed)
-        },
+      filter = vim.log.levels.DEBUG,
+      override_vim_notify = true,
+      window = {
+        avoid = { "NvimTree" },
+        y_padding = 2,
       },
-      notification = {
-        override_vim_notify = true,
-        window = {
-          y_padding = 2,
-        },
-        view = {
-          reflow = true,
-          stack_upwards = false,
-        },
+      view = {
+        reflow = true,
+        stack_upwards = false,
+      },
+      progress = {
+        ignore_done_already = true,
+        ignore_empty_message = true,
       },
     },
   },

@@ -3,6 +3,9 @@ return {
     "lewis6991/gitsigns.nvim",
     cmd = "Gitsigns",
     dependencies = { "nvim-lua/plenary.nvim" },
-    event = "UIEnter",
+    event = { "VeryLazy" },
+    opts = {
+      attach_to_untracked = false,
+    },
   },
 }

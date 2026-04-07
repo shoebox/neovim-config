@@ -38,6 +38,6 @@ return {
       { "<space>8", "<cmd>BufferLineGoToBuffer 8<cr>", desc = "Bufferline - Go to buffer 8" },
       { "<space>9", "<cmd>BufferLineGoToBuffer 9<cr>", desc = "Bufferline - Go to buffer 9" },
     },
-    event = "BufEnter",
+    event = "VeryLazy",
   },
 }
