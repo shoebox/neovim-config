@@ -1,6 +1,64 @@
-local _fidget_handles = {}
-local _start_times = {}
+local _sessions = {}
 local _focused = true
+
+local NOTIFICATION_THRESHOLD_S = 30
+
+--- Truncate a prompt string to a maximum length, appending "…" if truncated.
+local function truncate_prompt(prompt, max_len)
+  max_len = max_len or 50
+  if not prompt or #prompt == 0 then
+    return ""
+  end
+  if #prompt > max_len then
+    return prompt:sub(1, max_len) .. "…"
+  end
+  return prompt
+end
+
+--- Send a macOS notification with the tmux pane title as the notification title.
+local function send_notification(status, minutes, subtitle)
+  vim.system({ "tmux", "display-message", "-p", "#T" }, {}, function(result)
+    local pane_title = vim.trim(result.stdout or "tmux")
+    local title = "🤖 " .. pane_title
+    vim.schedule(function()
+      vim.system({
+        "osascript",
+        "-e",
+        string.format(
+          'display notification "Job %s after %s min" with title "%s" subtitle "%s"',
+          status,
+          minutes,
+          title,
+          subtitle
+        ),
+      })
+    end)
+  end)
+end
+
+--- Start tracking a session: record timing and prompt.
+local function track_session(session_id, prompt)
+  _sessions[session_id] = {
+    start_time = vim.uv.hrtime(),
+    prompt = truncate_prompt(prompt),
+  }
+end
+
+--- Complete a tracked session: optionally send a system notification.
+local function complete_session(session_id, success)
+  local session = _sessions[session_id]
+  if not session then
+    return
+  end
+  _sessions[session_id] = nil
+
+  local elapsed_s = (vim.uv.hrtime() - session.start_time) / 1e9
+  if elapsed_s >= NOTIFICATION_THRESHOLD_S and not _focused then
+    local status = success and "completed" or "failed"
+    local minutes = string.format("%.1f", elapsed_s / 60)
+    send_notification(status, minutes, session.prompt)
+  end
+end
 
 return {
   {
@@ -21,54 +79,10 @@ return {
       },
       hooks = {
         on_prompt_submit = function(data)
-          local has_fidget, fidget = pcall(require, "fidget")
-          if not has_fidget then
-            return
-          end
-
-          -- Cancel any existing handle for this session
-          if _fidget_handles[data.session_id] then
-            _fidget_handles[data.session_id]:cancel()
-          end
-
-          local short_prompt = data.prompt and data.prompt:sub(1, 50) or ""
-          if data.prompt and #data.prompt > 50 then
-            short_prompt = short_prompt .. "…"
-          end
-
-          _fidget_handles[data.session_id] = fidget.progress.handle.create({
-            title = short_prompt,
-            message = "Thinking...",
-            lsp_client = { name = "Agentic" },
-          })
-          _start_times[data.session_id] = vim.uv.hrtime()
+          track_session(data.session_id, data.prompt)
         end,
         on_response_complete = function(data)
-          local handle = _fidget_handles[data.session_id]
-          if handle then
-            handle.message = data.success and "Done." or "Error."
-            handle:finish()
-            _fidget_handles[data.session_id] = nil
-          end
-
-          local start_time = _start_times[data.session_id]
-          if start_time then
-            local elapsed_s = (vim.uv.hrtime() - start_time) / 1e9
-            _start_times[data.session_id] = nil
-            if elapsed_s >= 60 and not _focused then
-              local status = data.success and "completed" or "failed"
-              local minutes = string.format("%.1f", elapsed_s / 60)
-              vim.system({
-                "osascript",
-                "-e",
-                string.format(
-                  'display notification "Job %s after %s min" with title "Agentic" subtitle "🤖 AI Task"',
-                  status,
-                  minutes
-                ),
-              })
-            end
-          end
+          complete_session(data.session_id, data.success)
         end,
       },
     },
