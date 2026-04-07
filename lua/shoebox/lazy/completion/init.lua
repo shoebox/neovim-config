@@ -1,138 +1,122 @@
 local vim = vim
 
+local function setup_completeopt()
+  vim.opt.completeopt = { "menuone", "popup", "fuzzy", "noinsert" }
+end
+
+local function is_completion_disabled()
+  local buftype = vim.bo.buftype
+  return buftype == "prompt" or buftype == "nofile"
+end
+
+local function trigger_lsp_completion()
+  vim.lsp.completion.get()
+end
+
+local function trigger_buffer_completion()
+  local key = vim.keycode("<C-x><C-n>")
+  vim.api.nvim_feedkeys(key, "m", false)
+end
+
+local function on_insert_char_pre()
+  if is_completion_disabled() then
+    return
+  end
+
+  vim.schedule(function()
+    local clients = vim.lsp.get_clients({ bufnr = 0 })
+
+    if next(clients) ~= nil then
+      trigger_lsp_completion()
+    else
+      trigger_buffer_completion()
+    end
+  end)
+end
+
+local function setup_auto_completion()
+  vim.api.nvim_create_autocmd("InsertCharPre", {
+    callback = on_insert_char_pre,
+  })
+end
+
+local function setup_tab_keymap()
+  vim.keymap.set("i", "<tab>", function()
+    local key = vim.keycode("<tab>")
+    if vim.fn.pumvisible() == 1 then
+      key = vim.keycode("<C-n>")
+    end
+    vim.api.nvim_feedkeys(key, "n", false)
+  end, {})
+end
+
+local function setup_enter_keymap()
+  vim.keymap.set("i", "<CR>", function()
+    if vim.fn.pumvisible() == 1 then
+      return vim.keycode("<C-y>")
+    end
+    return vim.keycode("<CR>")
+  end, { expr = true })
+end
+
+local function setup_keymaps()
+  setup_tab_keymap()
+  setup_enter_keymap()
+end
+
+local function convert_completion_item(item)
+  local kind = vim.lsp.protocol.CompletionItemKind[item.kind] or "Text"
+  return {
+    abbr = item.label,
+    kind = kind,
+  }
+end
+
+local function setup_lsp_completion()
+  vim.api.nvim_create_autocmd("LspAttach", {
+    callback = function(args)
+      vim.lsp.completion.enable(true, args.data.client_id, args.buf, {
+        autotrigger = false,
+        convert = convert_completion_item,
+      })
+    end,
+  })
+end
+
+local function setup()
+  setup_completeopt()
+  setup_auto_completion()
+  setup_keymaps()
+  setup_lsp_completion()
+end
+
+vim.api.nvim_create_autocmd("User", {
+  pattern = "VeryLazy",
+  once = true,
+  callback = setup,
+})
+
 return {
   {
-    "saghen/blink.cmp",
-    event = { "InsertEnter" },
-    version = "*",
+    "onsails/lspkind.nvim",
     opts = {
-      enabled = function()
-        return vim.bo.buftype ~= "prompt" and vim.bo.buftype ~= "nofile"
-      end,
-      keymap = {
-        preset = "default",
-        ["<Tab>"] = {},
-        ["<CR>"] = { "accept", "fallback" },
-      },
-      fuzzy = {
-        sorts = {
-          "exact",
-          -- defaults
-          "score",
-          "sort_text",
-        },
-        implementation = "prefer_rust_with_warning",
-      },
-      signature = {
-        enabled = true,
-        trigger = {
-          enabled = true,
-        },
-      },
-      completion = {
-        ghost_text = {
-          enabled = false,
-        },
-        documentation = {
-          auto_show = true,
-          auto_show_delay_ms = 100,
-          window = {
-            border = "none",
-          },
-        },
-        list = {
-          selection = {
-            preselect = true,
-            auto_insert = true,
-          },
-        },
-        menu = {
-          auto_show = true,
-          draw = {
-            -- We don't need label_description now because label and label_description are already
-            -- combined together in label by colorful-menu.nvim.
-            columns = { { "kind_icon" }, { "label", gap = 1 } },
-            padding = { 1, 2 },
-            components = {
-              kind_icon = {
-                text = function(ctx)
-                  local kind_icon, _, _ = require("mini.icons").get("lsp", ctx.kind)
-                  return kind_icon .. ctx.icon_gap
-                end,
-                -- (optional) use highlights from mini.icons
-                highlight = function(ctx)
-                  local _, hl, _ = require("mini.icons").get("lsp", ctx.kind)
-                  return hl
-                end,
-              },
-              kind = {
-                -- (optional) use highlights from mini.icons
-                highlight = function(ctx)
-                  local _, hl, _ = require("mini.icons").get("lsp", ctx.kind)
-                  return hl
-                end,
-              },
-              label = {
-                width = { fill = true, max = 100 },
-                text = function(ctx)
-                  local highlights_info = require("colorful-menu").blink_highlights(ctx)
-                  if highlights_info ~= nil then
-                    -- Or you want to add more item to label
-                    return highlights_info.label
-                  else
-                    return ctx.label
-                  end
-                end,
-                highlight = function(ctx)
-                  local highlights = {}
-                  local highlights_info = require("colorful-menu").blink_highlights(ctx)
-                  if highlights_info ~= nil then
-                    highlights = highlights_info.highlights
-                  end
-                  for _, idx in ipairs(ctx.label_matched_indices) do
-                    table.insert(highlights, { idx, idx + 1, group = "BlinkCmpLabelMatch" })
-                  end
-                  -- Do something else
-                  return highlights
-                end,
-              },
-            },
-          },
-        },
-      },
-      cmdline = {
-        sources = {},
-        enabled = false,
-      },
-      term = {
-        sources = {},
-        enabled = false,
-      },
-      sources = {
-        default = {
-          "buffer",
-          "lsp",
-          "omni",
-          "path",
-          "snippets",
-          "copilot",
-        },
-        providers = {
-          copilot = {
-            name = "copilot",
-            module = "blink-copilot",
-            score_offset = 100,
-            async = true,
-          },
-          cmdline = {
-            enabled = false,
-          },
-        },
-      },
+      mode = "symbol_text",
     },
-    dependencies = {
-      { "fang2hou/blink-copilot", lazy = true },
-      { "xzbdmw/colorful-menu.nvim", lazy = true },
+    event = "InsertEnter",
+  },
+  {
+    "ray-x/lsp_signature.nvim",
+    event = "InsertEnter",
+    opts = {
+      bind = true,
+      handler_opts = { border = "rounded" },
+      max_height = 20,
+      max_width = 80,
+      wrap = true,
+      floating_window = true,
+      floating_window_above_cur_line = true,
+      doc_lines = 20,
+      hint_enable = false,
     },
   },
 }
