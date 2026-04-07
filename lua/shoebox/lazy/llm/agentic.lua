@@ -1,5 +1,6 @@
 local _fidget_handles = {}
 local _start_times = {}
+local _focused = true
 
 return {
   {
@@ -54,7 +55,7 @@ return {
           if start_time then
             local elapsed_s = (vim.uv.hrtime() - start_time) / 1e9
             _start_times[data.session_id] = nil
-            if elapsed_s >= 60 then
+            if elapsed_s >= 60 and not _focused then
               local status = data.success and "completed" or "failed"
               local minutes = string.format("%.1f", elapsed_s / 60)
               vim.system({
@@ -73,6 +74,17 @@ return {
     },
 
     init = function()
+      vim.api.nvim_create_autocmd("FocusGained", {
+        callback = function()
+          _focused = true
+        end,
+      })
+      vim.api.nvim_create_autocmd("FocusLost", {
+        callback = function()
+          _focused = false
+        end,
+      })
+
       vim.api.nvim_create_autocmd("FileType", {
         pattern = { "AgenticChat", "AgenticInput", "AgenticFiles" },
         callback = function(ev)
