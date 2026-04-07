@@ -16,6 +16,10 @@ return {
           activeBorderColor = { fg = "Constant", bold = true },
           inactiveBorderColor = { fg = "Comment", bold = true },
         },
+        win = {
+          width = 0,
+          height = 0,
+        },
       },
       scratch = {
         height = 50,

@@ -46,14 +46,14 @@ return {
         },
         output_panel = {
           enabled = true,
-          open = "botright split | resize 20 | vertical resize 100",
+          -- open = "botright split | resize 20 | vertical resize 100",
         },
         status = {
           signs = true,
         },
         summary = {
-          animated = false,
-          count = false,
+          animated = true,
+          count = true,
         },
       })
     end,
