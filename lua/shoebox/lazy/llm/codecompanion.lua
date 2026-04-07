@@ -25,7 +25,6 @@ return {
       "CodeCompanion",
     },
     dependencies = {
-      "github/copilot.vim",
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
     },
@@ -59,7 +58,7 @@ return {
       prompt_library = {
         markdown = {
           dirs = {
-            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/",
+            -- vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/",
             vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/codereview/",
             vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/commit/",
             vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/docs/",
@@ -71,11 +70,13 @@ return {
       display = {
         action_palette = {
           opts = {
-            show_default_actions = true,
-            show_default_prompt_library = false,
-            width = 20,
-            height = 10,
+            show_preset_actions = true,
+            show_preset_prompts = true,
+            title = "How can I help?",
           },
+          width = 100,
+          height = 10,
+          provider = "snacks",
         },
         chat = {
           window = {
@@ -89,13 +90,16 @@ return {
       memory = {
         opts = {
           chat = {
-            enabled = true,
+            enabled = false,
           },
         },
       },
       strategies = {
         chat = {
-          adapter = "auggie_cli",
+          adapter = {
+            name = "auggie_cli",
+            model = "claude-optus-4-6",
+          },
           keymaps = {
             clear = {
               modes = { n = "gxx" },
@@ -114,7 +118,7 @@ return {
           },
         },
         inline = {
-          adapter = "copilot",
+          adapter = "ollama",
         },
         cmd = {
           adapter = "auggie_cli",
