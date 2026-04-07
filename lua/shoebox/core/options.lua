@@ -40,3 +40,8 @@ vim.g.loaded_ruby_provider = 0
 vim.g.loaded_node_provider = 0
 
 vim.o.sessionoptions = "buffers,curdir,tabpages,winsize,winpos,localoptions"
+
+-- completion options
+vim.opt.completeopt = "menuone,noinsert,noselect,fuzzy" -- Completion options
+
+vim.opt.pumheight = 15
