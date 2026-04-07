@@ -3,14 +3,14 @@ return {
     "neovim/nvim-lspconfig",
     event = "BufReadPre",
     keys = {
-      { "gD", vim.lsp.buf.declaration, desc = "LSP: Go to declaration" },
-      { "gd", vim.lsp.buf.definition, desc = "LSP: Go to definition" },
-      { "K", vim.lsp.buf.hover, desc = "LSP: Hover" },
-      { "gi", vim.lsp.buf.implementation, desc = "LSP: Go to implementation" },
-      { "<C-k>", vim.lsp.buf.signature_help, desc = "LSP: Signature help" },
-      { "<leader>D", vim.lsp.buf.type_definition, desc = "LSP: Type definition" },
-      { "<leader>rn", vim.lsp.buf.rename, desc = "LSP: Rename" },
-      { "gr", vim.lsp.buf.references, desc = "LSP: References" },
+      { "gD", function() vim.lsp.buf.declaration() end, desc = "LSP: Go to declaration" },
+      { "gd", function() vim.lsp.buf.definition() end, desc = "LSP: Go to definition" },
+      { "K", function() vim.lsp.buf.hover() end, desc = "LSP: Hover" },
+      { "gi", function() vim.lsp.buf.implementation() end, desc = "LSP: Go to implementation" },
+      { "<C-k>", function() vim.lsp.buf.signature_help() end, desc = "LSP: Signature help" },
+      { "<leader>D", function() vim.lsp.buf.type_definition() end, desc = "LSP: Type definition" },
+      { "<leader>rn", function() vim.lsp.buf.rename() end, desc = "LSP: Rename" },
+      { "gr", function() vim.lsp.buf.references() end, desc = "LSP: References" },
       {
         "<leader>f",
         function()
@@ -19,14 +19,14 @@ return {
         desc = "LSP: Format",
       },
       -- workspace
-      { "<space>wa", vim.lsp.buf.add_workspace_folder, desc = "LSP: Add workspace folder" },
-      { "<space>wr", vim.lsp.buf.remove_workspace_folder, desc = "LSP: Remove workspace folder" },
+      { "<space>wa", function() vim.lsp.buf.add_workspace_folder() end, desc = "LSP: Add workspace folder" },
+      { "<space>wr", function() vim.lsp.buf.remove_workspace_folder() end, desc = "LSP: Remove workspace folder" },
       -- diagnostics
-      { "<leader>dl", vim.diagnostic.open_float, desc = "LSP: Open diagnostic float" },
-      { "<leader>dn", vim.diagnostic.goto_next, desc = "LSP: Next diagnostic" },
-      { "<leader>dp", vim.diagnostic.goto_prev, desc = "LSP: Previous diagnostic" },
-      { "<leader>dh", vim.diagnostic.hide, desc = "LSP: Hide diagnostics" },
-      { "<leader>ds", vim.diagnostic.show, desc = "LSP: Show diagnostics" },
+      { "<leader>dl", function() vim.diagnostic.open_float() end, desc = "LSP: Open diagnostic float" },
+      { "<leader>dn", function() vim.diagnostic.goto_next() end, desc = "LSP: Next diagnostic" },
+      { "<leader>dp", function() vim.diagnostic.goto_prev() end, desc = "LSP: Previous diagnostic" },
+      { "<leader>dh", function() vim.diagnostic.hide() end, desc = "LSP: Hide diagnostics" },
+      { "<leader>ds", function() vim.diagnostic.show() end, desc = "LSP: Show diagnostics" },
     },
     opts = {
       diagnostics = {
@@ -83,6 +83,7 @@ return {
             },
           },
         },
+        ts_ls = {},
       },
     },
     config = function(_, opts)
