@@ -15,6 +15,7 @@ return {
         gwhen = { pattern = "// When:", group = "MiniPatternsGherkin" },
         gthen = { pattern = "// Then:", group = "MiniPatternsGherkin" },
         gand = { pattern = "// And:", group = "MiniPatternsGherkin" },
+        gbut = { pattern = "// But:", group = "MiniPatternsGherkin" },
         nolint = { pattern = "//nolint:", group = "MiniHipattersNote" },
       },
     },

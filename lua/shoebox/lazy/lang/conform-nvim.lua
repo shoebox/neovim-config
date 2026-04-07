@@ -23,7 +23,6 @@ return {
             "gofumpt",
             "golangci-lint",
             "golines",
-            "gopls",
             "goimports-reviser",
           },
           ["http"] = {},
@@ -41,8 +40,9 @@ return {
           -- },
           ["js"] = { "prettier" },
           ["json"] = { "gojq" },
-          ["toml"] = { "taplo" },
+          -- ["toml"] = { "taplo" },
           ["yaml"] = { "yamlfmt" },
+          ["yaml.ansible"] = { "ansible-lint", "yamlfmt" },
         },
       })
     end,

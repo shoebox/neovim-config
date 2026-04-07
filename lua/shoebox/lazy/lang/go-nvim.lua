@@ -6,10 +6,9 @@ return {
   {
     "ray-x/go.nvim",
     dependencies = {
-      "neovim/nvim-lspconfig",
-      "nvim-treesitter/nvim-treesitter",
+      -- "neovim/nvim-lspconfig",
+      -- "nvim-treesitter/nvim-treesitter",
     },
-    event = "BufReadPre",
     opts = {
       dap_debug_gui = true,
       dap_debug_vt = true,
@@ -52,7 +51,6 @@ return {
       "gomod",
       "gosum",
       "gotexttmpl",
-      "gotmpl",
     },
     keys = {
       {
