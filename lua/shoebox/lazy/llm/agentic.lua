@@ -1,4 +1,5 @@
 local _fidget_handles = {}
+local _start_times = {}
 
 return {
   {
@@ -39,6 +40,7 @@ return {
             message = "Thinking...",
             lsp_client = { name = "Agentic" },
           })
+          _start_times[data.session_id] = vim.uv.hrtime()
         end,
         on_response_complete = function(data)
           local handle = _fidget_handles[data.session_id]
@@ -46,6 +48,25 @@ return {
             handle.message = data.success and "Done." or "Error."
             handle:finish()
             _fidget_handles[data.session_id] = nil
+          end
+
+          local start_time = _start_times[data.session_id]
+          if start_time then
+            local elapsed_s = (vim.uv.hrtime() - start_time) / 1e9
+            _start_times[data.session_id] = nil
+            if elapsed_s >= 60 then
+              local status = data.success and "completed" or "failed"
+              local minutes = string.format("%.1f", elapsed_s / 60)
+              vim.system({
+                "osascript",
+                "-e",
+                string.format(
+                  'display notification "Job %s after %s min" with title "Agentic" subtitle "🤖 AI Task"',
+                  status,
+                  minutes
+                ),
+              })
+            end
           end
         end,
       },
