@@ -1,24 +1,23 @@
-local vim = vim
-
 return {
   {
     "nvim-treesitter/nvim-treesitter",
     branch = "main",
+    build = ":TSUpdate",
+    -- event = "VeryLazy",
+    event = { "BufReadPost", "BufNewFile" },
     config = function()
       local parsers = {
         "bash",
         "diff",
+        "gherkin",
         "git_rebase",
         "gitcommit",
         "go",
         "gomod",
         "gosum",
-        "gowork",
         "json",
         "lua",
         "nix",
-        "markdown",
-        "markdown_inline",
         "regex",
         "toml",
         "vim",
@@ -26,6 +25,20 @@ return {
         "xml",
         "yaml",
       }
+
+      -- Register custom parser source for gherkin via TSUpdate hook
+      vim.api.nvim_create_autocmd("User", {
+        pattern = "TSUpdate",
+        callback = function()
+          require("nvim-treesitter.parsers").gherkin = {
+            install_info = {
+              url = "https://github.com/binhtddev/tree-sitter-gherkin",
+              files = { "src/parser.c" },
+              branch = "main",
+            },
+          }
+        end,
+      })
 
       -- Track installation status
       local installation_complete = false
@@ -39,17 +52,23 @@ return {
         end, 1000)
       end)
 
+      local ignored_fts = {
+        snacks_dashboard = true,
+        snacks_notif = true,
+        snacks_input = true,
+        prompt = true,
+        fidget = true,
+      }
+
+      -- Enable treesitter highlighting and indentation for a buffer
+      local function enable_ts(bufnr)
+        pcall(vim.treesitter.start, bufnr)
+        vim.bo[bufnr].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      end
+
       -- Helper function to start treesitter for a buffer
       local function start_treesitter(bufnr, filetype)
-        local ignored_fts = {
-          "snacks_dashboard",
-          "snacks_notif",
-          "snacks_input",
-          "prompt",
-          "fidget",
-        }
-
-        if vim.tbl_contains(ignored_fts, filetype) then
+        if ignored_fts[filetype] then
           return
         end
 
@@ -57,16 +76,14 @@ return {
         local has_parser = pcall(vim.treesitter.language.add, lang)
 
         if has_parser then
-          pcall(vim.treesitter.start, bufnr)
-          vim.bo[bufnr].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          enable_ts(bufnr)
         elseif not installation_complete then
           -- If installation is still in progress, retry after a delay
           vim.defer_fn(function()
             if vim.api.nvim_buf_is_valid(bufnr) then
               local retry_has_parser = pcall(vim.treesitter.language.add, lang)
               if retry_has_parser then
-                pcall(vim.treesitter.start, bufnr)
-                vim.bo[bufnr].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+                enable_ts(bufnr)
               end
             end
           end, 500)
@@ -91,6 +108,5 @@ return {
         end,
       })
     end,
-    build = ":TSUpdate",
   },
 }
