@@ -1,6 +1,5 @@
 local bind = require("shoebox.mapping.helper")
 local vim = vim or {}
-local map_cr = bind.map_cr
 local map_cmd = bind.map_cmd
 
 local global_nav = {
@@ -15,16 +14,6 @@ local global_nav = {
 }
 
 vim.keymap.set({ "n", "x" }, "<c-s>", "<cmd>w<CR>")
-
--- local nb = function()
---   local opts = { noremap = true, silent = false }
---   vim.keymap.set(
---     "n",
---     "<leader>wt",
---     ":e `='~/.nb/home/Journal/' . expand(strftime('%Y-%m-%d')) . '.adoc'` <CR>",
---     opts
---   )
--- end
 
 local clipboard = function()
   local opts = { noremap = true, silent = true }
@@ -58,6 +47,9 @@ local git = function()
   end, opts)
 end
 
--- nb()
+-- Sound word with quotes...
+vim.keymap.set("n", "<leader>wsq", 'ciw""<Esc>P', { desc = "Surround word with quotes" })
+vim.keymap.set("n", "<leader>wss", "ciw``<Esc>P", { desc = "Surround word with quotes" })
+
 clipboard()
 git()
