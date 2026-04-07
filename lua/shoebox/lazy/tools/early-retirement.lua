@@ -5,6 +5,6 @@ return {
       retirementAgeMins = 5,
       notificationOnAutoClose = true,
     },
-    event = "VeryLazy",
+    event = { "BufReadPre", "BufNewFile" },
   },
 }
