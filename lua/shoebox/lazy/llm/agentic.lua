@@ -1,3 +1,5 @@
+local _fidget_handles = {}
+
 return {
   {
     "carlos-algms/agentic.nvim",
@@ -13,6 +15,38 @@ return {
             header = header .. " • " .. parts.suffix
           end
           return header
+        end,
+      },
+      hooks = {
+        on_prompt_submit = function(data)
+          local has_fidget, fidget = pcall(require, "fidget")
+          if not has_fidget then
+            return
+          end
+
+          -- Cancel any existing handle for this session
+          if _fidget_handles[data.session_id] then
+            _fidget_handles[data.session_id]:cancel()
+          end
+
+          local short_prompt = data.prompt and data.prompt:sub(1, 50) or ""
+          if data.prompt and #data.prompt > 50 then
+            short_prompt = short_prompt .. "…"
+          end
+
+          _fidget_handles[data.session_id] = fidget.progress.handle.create({
+            title = short_prompt,
+            message = "Thinking...",
+            lsp_client = { name = "Agentic" },
+          })
+        end,
+        on_response_complete = function(data)
+          local handle = _fidget_handles[data.session_id]
+          if handle then
+            handle.message = data.success and "Done." or "Error."
+            handle:finish()
+            _fidget_handles[data.session_id] = nil
+          end
         end,
       },
     },
