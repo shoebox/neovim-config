@@ -20,6 +20,9 @@ vim.opt.rtp:prepend(lazypath)
 local lazy = require("lazy")
 
 lazy.setup({
+  change_detection = {
+    notify = false,
+  },
   spec = {
     { import = "shoebox.lazy.completion" },
     { import = "shoebox.lazy.lang" },
@@ -28,5 +31,19 @@ lazy.setup({
     { import = "shoebox.lazy.tools" },
     { import = "shoebox.lazy.ui" },
     { import = "shoebox.lazy.util" },
+  },
+  performance = {
+    rtp = {
+      disabled_plugins = {
+        "gzip",
+        "matchit",
+        "matchparen",
+        "netrwPlugin",
+        "tarPlugin",
+        "tohtml",
+        "tutor",
+        "zipPlugin",
+      },
+    },
   },
 })
