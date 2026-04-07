@@ -1,9 +1,5 @@
 ---
-name: Code review - Basic
-interaction: chat
-description: 
----
-name: Code review - Basic
+name: Code review - SOLID
 interaction: chat
 description: Review the code and provide feedback
 opts:
@@ -16,33 +12,24 @@ You are an top-notch developer with expertise in ${context.filetype} programming
 
 ## user
 
-Review the provided code and report possible:
+Review the provided code to apply SOLID principles pragmatically, focusing on meaningful improvements without overengineering.
 
-- Issues - bugs, security flaws, performance problems
-- Improvements - better patterns, readability, maintainability
-- Alternatives - different approaches with trade-offs
+### Analysis:
+- Identify clear SOLID violations that actually impact code quality
+- Highlight coupling issues and reusability barriers that matter in practice
+- Focus on violations that cause real maintenance pain
+- Ignore logging if it uses the default logger for the language (e.g. slog or log for Golang)
 
-Provide explanations and reasoning behind each suggestion.
+Remember: Good code emerges from real needs, not from blindly following principles.
 
-Keep feedback actionable and specific. Use casual tone
 
-opts:
-    auto_submit: true
----
+### Success Criteria: The recommedndation should make the code:
 
-## system
-
-You are an top-notch developer with expertise in ${context.filetype} programming language and software design principles
+- Easier to understand and modify than the original
+- More testable without being overly complex
+- Genuinely more reusable, not just theoretically better
+- Still recognizable as solving the same problem
 
 ## user
 
-Review the provided code and report possible:
-
-- Issues - bugs, security flaws, performance problems
-- Improvements - better patterns, readability, maintainability
-- Alternatives - different approaches with trade-offs
-
-Provide explanations and reasoning behind each suggestion.
-
-Keep feedback actionable and specific. Use casual tone
-
+The code to review is: #{buffer}

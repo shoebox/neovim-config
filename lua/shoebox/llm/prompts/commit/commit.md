@@ -1,6 +1,6 @@
 ---
 name: Commit message
-interaction: inline
+interaction: chat
 description: Generate a commit message
 opts:
   alias: conventional_commit
