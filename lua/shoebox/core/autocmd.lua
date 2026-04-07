@@ -1,7 +1,9 @@
 local vim = vim
 
+-- Autocmd group for auto-save functionality
 local focus_group = vim.api.nvim_create_augroup("focus_group", {})
 
+-- Buffer types to ignore when auto-saving
 local ignore_buftype = {
   "acwrite",
   "filesystem",
@@ -11,26 +13,31 @@ local ignore_buftype = {
   "terminal",
 }
 
+-- User command to close all buffers that are not within the current workspace directory
 vim.api.nvim_create_user_command("CloseBuffersNotInWorkspace", function()
-  local workspace = vim.fn.getcwd() .. "/" -- Adding "/" at the end to ensure that it's a directory path
+  local workspace = vim.fs.normalize(vim.fn.getcwd())
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     if not vim.api.nvim_buf_is_loaded(buf) then
       goto continue
     end
 
     local filepath = vim.api.nvim_buf_get_name(buf)
-    if vim.startswith(filepath, workspace) then
+    if filepath == "" or vim.startswith(vim.fs.normalize(filepath), workspace) then
       goto continue
     end
 
     -- Close the buffer
-    vim.notify(("Closing buffer %s"):format(filepath))
-
-    vim.api.nvim_buf_delete(buf, { force = true })
+    local ok, err = pcall(vim.api.nvim_buf_delete, buf, { force = true })
+    if ok then
+      vim.notify(("Closed buffer %s"):format(filepath))
+    else
+      vim.notify(("Failed to close buffer %s: %s"):format(filepath, err), vim.log.levels.WARN)
+    end
     ::continue::
   end
-end, { desc = "Close all buffers not into workspace" })
+end, { desc = "Close all buffers not in workspace" })
 
+-- User command to close all buffers except the current one
 vim.api.nvim_create_user_command("CloseBuffersExpectCurrent", function()
   local current = vim.api.nvim_get_current_buf()
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
@@ -40,44 +47,41 @@ vim.api.nvim_create_user_command("CloseBuffersExpectCurrent", function()
   end
 end, { desc = "Close all buffer but current one" })
 
+-- User command to wipe out all buffers that are not currently displayed in any window
 vim.api.nvim_create_user_command("WipeWindowlessBufs", function()
   local bufinfos = vim.fn.getbufinfo({ buflisted = true })
-  vim.tbl_map(function(bufinfo)
+  for _, bufinfo in ipairs(bufinfos) do
     if bufinfo.changed == 0 and (not bufinfo.windows or #bufinfo.windows == 0) then
       vim.notify(("Deleting buffer %d : %s"):format(bufinfo.bufnr, bufinfo.name))
-      vim.api.nvim_buf_delete(bufinfo.bufnr, { force = false, unload = false })
+      pcall(vim.api.nvim_buf_delete, bufinfo.bufnr, { force = false, unload = false })
     end
-  end, bufinfos)
+  end
 end, { desc = "Wipeout all buffers not shown in a window" })
 
+-- Autocmd to automatically save modified buffers when leaving them or losing focus
+-- Skips readonly, non-modifiable, special buffer types, and unnamed buffers
 vim.api.nvim_create_autocmd({ "BufLeave", "FocusLost" }, {
   group = focus_group,
-  once = true,
-  pattern = { "*" },
+  pattern = "*",
   callback = function(args)
-    local bufid = vim.api.nvim_get_current_buf()
-    vim.api.nvim_clear_autocmds({ group = focus_group, buffer = bufid })
+    if vim.bo[args.buf].readonly or not vim.bo[args.buf].modifiable then
+      return
+    end
 
-    if not vim.bo[args.buf].readonly then
-      local buftype = vim.api.nvim_get_option_value("buftype", { buf = args.buf })
-      local modifiable = vim.api.nvim_get_option_value("modifiable", { buf = args.buf })
-      local ignore_buffername = { "", " ", "nofile" }
+    local buftype = vim.bo[args.buf].buftype
+    if vim.tbl_contains(ignore_buftype, buftype) then
+      return
+    end
 
-      if modifiable and not vim.tbl_contains(ignore_buftype, buftype) then
-        local bufferName = vim.api.nvim_buf_get_name(0)
-        local infos = vim.fn.getbufinfo(bufid)
+    local bufname = vim.api.nvim_buf_get_name(args.buf)
+    if bufname == "" then
+      return
+    end
 
-        -- do the buffer has any changes
-        local changed = 0
-        if type(infos) == "table" and #infos >= 1 then
-          changed = infos[1].changed
-        end
-
-        -- if the buffer is not excluded and has changes
-        if not vim.tbl_contains(ignore_buffername, bufferName) and changed == 1 then
-          -- writing the file silently
-          vim.cmd.w({ mods = { silent = true } })
-        end
+    if vim.bo[args.buf].modified then
+      local ok, err = pcall(vim.cmd.w, { mods = { silent = true } })
+      if not ok then
+        vim.notify(("Failed to save buffer: %s"):format(err), vim.log.levels.ERROR)
       end
     end
   end,
@@ -116,8 +120,13 @@ vim.api.nvim_create_autocmd({ "BufLeave", "FocusLost" }, {
 --   })
 -- end
 
-vim.o.autoread = true
+-- Autocmd group for checking if files have been modified outside of Neovim
+local checktime_group = vim.api.nvim_create_augroup("checktime_group", { clear = true })
+
+-- Autocmd to check if files have been modified externally and reload them if needed
+-- Runs on buffer enter, cursor hold events, and when Neovim gains focus
 vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "CursorHoldI", "FocusGained" }, {
+  group = checktime_group,
   command = "if mode() != 'c' | checktime | endif",
-  pattern = { "*" },
+  pattern = "*",
 })
