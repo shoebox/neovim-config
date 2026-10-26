@@ -130,3 +130,25 @@ vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold", "CursorHoldI", "FocusGai
   command = "if mode() != 'c' | checktime | endif",
   pattern = "*",
 })
+
+-- Re-equalize all splits when the terminal is resized or a split is opened/closed.
+-- Windows with 'winfixwidth' or 'winfixheight' are left alone.
+-- Deferred so layout has settled before `wincmd =` runs.
+vim.api.nvim_create_autocmd({ "VimResized", "WinNew", "WinClosed" }, {
+  group = vim.api.nvim_create_augroup("equalize_splits", { clear = true }),
+  callback = function()
+    vim.schedule(function()
+      vim.cmd("wincmd =")
+    end)
+  end,
+})
+
+-- Replace non-breaking spaces (U+00A0) with regular spaces when saving markdown files
+local markdown_group = vim.api.nvim_create_augroup("markdown_nbsp", { clear = true })
+
+vim.api.nvim_create_autocmd("BufWritePre", {
+  group = markdown_group,
+  pattern = "*.md",
+  command = "silent! %s/\\%xa0/ /ge",
+})
+

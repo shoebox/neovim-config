@@ -33,6 +33,7 @@ vim.opt.isfname:append("@-@")
 vim.opt.updatetime = 50
 
 vim.opt.colorcolumn = "100"
+vim.opt.textwidth = 99
 
 vim.g.loaded_python3_provider = 0
 vim.g.loaded_perl_provider = 0
