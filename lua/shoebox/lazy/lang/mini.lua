@@ -4,18 +4,15 @@ return {
     event = "BufReadPre",
     opts = {
       highlighters = {
-        -- Highlight standalone 'FIXME', 'HACK', 'TODO', 'NOTE'
         fixme = { pattern = "%f[%w]()FIXME()%f[%W]", group = "MiniHipatternsFixme" },
         hack = { pattern = "%f[%w]()HACK()%f[%W]", group = "MiniHipatternsHack" },
         todo = { pattern = "%f[%w]()TODO()%f[%W]", group = "MiniHipatternsTodo" },
         note = { pattern = "%f[%w]()NOTE()%f[%W]", group = "MiniHipatternsNote" },
-
-        -- Gherkin
-        ggiven = { pattern = "// Given:", group = "MiniPatternsGherkin" },
-        gwhen = { pattern = "// When:", group = "MiniPatternsGherkin" },
-        gthen = { pattern = "// Then:", group = "MiniPatternsGherkin" },
-        gand = { pattern = "// And:", group = "MiniPatternsGherkin" },
-        gbut = { pattern = "// But:", group = "MiniPatternsGherkin" },
+        ggiven = { pattern = "// Given", group = "MiniPatternsGherkin" },
+        gwhen = { pattern = "// When", group = "MiniPatternsGherkin" },
+        gthen = { pattern = "// Then", group = "MiniPatternsGherkin" },
+        gand = { pattern = "// And", group = "MiniPatternsGherkin" },
+        gbut = { pattern = "// But", group = "MiniPatternsGherkin" },
         nolint = { pattern = "//nolint:", group = "MiniHipattersNote" },
       },
     },
@@ -62,6 +59,20 @@ return {
   --   },
   -- },
   {
+    "nvim-mini/mini.diff",
+    event = "BufReadPre",
+    opts = function()
+      return {
+        view = { style = "sign", signs = { add = "▎", change = "▎", delete = "▂" } },
+        -- Unstaged changes use ▎/▂ signs; staged-only lines use ┆/▁ in the same colors.
+        source = {
+          require("shoebox.extras.minidiff_staged").source(),
+          require("mini.diff").gen_source.save(),
+        },
+      }
+    end,
+  },
+  {
     "nvim-mini/mini-git",
     config = function()
       require("mini.git").setup()
@@ -81,6 +92,7 @@ return {
     lazy = true,
     opts = {},
   },
+
   {
     "nvim-mini/mini.splitjoin",
     opts = {
