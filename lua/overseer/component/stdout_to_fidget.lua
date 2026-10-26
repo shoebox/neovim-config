@@ -1,13 +1,10 @@
 return {
-	desc = "Redirects stdout to Fidget",
+	desc = "Redirects stdout to notifications",
 	constructor = function(params)
-		local fidget = require("fidget")
-		-- You may optionally define any of the methods below
 		return {
 			on_output_lines = function(self, task, lines)
-				groupName = "Overseer.nvim"
 				for _, line in ipairs(lines) do
-					fidget.notify(line, vim.log.levels.INFO, { group = groupName, annotate = task.name })
+					vim.notify(string.format("[%s] %s", task.name, line), vim.log.levels.INFO)
 				end
 			end,
 		}
