@@ -55,6 +55,45 @@ return {
         end,
         desc = "Telescope - Git files",
       },
+      -- {
+      --   "<leader>gs",
+      --   function()
+      --     local action_state = require("telescope.actions.state")
+      --     local cur = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":p")
+      --     require("telescope.builtin").git_status({
+      --       layout_strategy = "horizontal",
+      --       previewer = require("telescope.previewers").new_termopen_previewer({
+      --         get_command = function(entry)
+      --           if entry.status == "??" then
+      --             return { "delta", "--paging=never", "/dev/null", entry.value }
+      --           end
+      --           return {
+      --             "env",
+      --             "GIT_PAGER=delta --paging=never",
+      --             "git",
+      --             "diff",
+      --             "HEAD",
+      --             "--",
+      --             entry.value,
+      --           }
+      --         end,
+      --       }),
+      --       attach_mappings = function(prompt_bufnr)
+      --         local picker = action_state.get_current_picker(prompt_bufnr)
+      --         picker:register_completion_callback(function(self)
+      --           for i = 1, self.manager:num_results() do
+      --             if self.manager:get_entry(i).path == cur then
+      --               self:set_selection(self:get_row(i))
+      --               return
+      --             end
+      --           end
+      --         end)
+      --         return true
+      --       end,
+      --     })
+      --   end,
+      --   desc = "Telescope - Git status (delta)",
+      -- },
       {
         "<leader>ca",
         function()

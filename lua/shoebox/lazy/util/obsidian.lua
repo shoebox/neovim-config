@@ -1,11 +1,11 @@
 return {
   {
-    "epwalsh/obsidian.nvim",
+    "obsidian-nvim/obsidian.nvim",
     version = "*",
-    requires = {
-      "nvim-lua/plenary.nvim",
-    },
     opts = {
+      -- render-markdown owns conceals; obsidian UI conflicts with it.
+      ui = { enable = false },
+      legacy_commands = false,
       daily_notes = {
         folder = "notes/dailies",
       },
@@ -16,29 +16,6 @@ return {
         },
       },
     },
-    cmd = {
-      "ObsidianBacklinks",
-      "ObsidianDailies",
-      "ObsidianExtractNote",
-      "ObsidianFollowLink",
-      "ObsidianLink",
-      "ObsidianLinkNew",
-      "ObsidianLinks",
-      "ObsidianNewFromTemplate",
-      "ObsidianOpen",
-      "ObsidianPasteImg",
-      "ObsidianQuickSwitch",
-      "ObsidianRename",
-      "ObsidianSearch",
-      "ObsidianTOC",
-      "ObsidianTags",
-      "ObsidianTemplate",
-      "ObsidianToggleCheckbox",
-      "ObsidianWorkspace",
-      "ObsidianNew",
-      "ObsidianToday",
-      "ObsidianTomorrow",
-      "ObsidianYesterday",
-    },
+    cmd = { "Obsidian" },
   },
 }
