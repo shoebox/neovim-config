@@ -64,30 +64,11 @@ local function setup_keymaps()
   setup_enter_keymap()
 end
 
-local function convert_completion_item(item)
-  local kind = vim.lsp.protocol.CompletionItemKind[item.kind] or "Text"
-  return {
-    abbr = item.label,
-    kind = kind,
-  }
-end
-
-local function setup_lsp_completion()
-  vim.api.nvim_create_autocmd("LspAttach", {
-    callback = function(args)
-      vim.lsp.completion.enable(true, args.data.client_id, args.buf, {
-        autotrigger = false,
-        convert = convert_completion_item,
-      })
-    end,
-  })
-end
-
 local function setup()
+  require("shoebox.extras.lsp_completion").setup()
   setup_completeopt()
   setup_auto_completion()
   setup_keymaps()
-  setup_lsp_completion()
 end
 
 vim.api.nvim_create_autocmd("User", {
