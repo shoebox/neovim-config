@@ -48,7 +48,6 @@ return {
     requires = {
       "nvim-lua/plenary.nvim",
       "nvim-telescope/telescope.nvim",
-      "rcarriga/nvim-notify",
     },
     keys = {
       {
