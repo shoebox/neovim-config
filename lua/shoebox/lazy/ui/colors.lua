@@ -7,19 +7,19 @@ local function apply_markdown_highlights()
   end
 
   -- heading backgrounds
-  hl("RenderMarkdownH1Bg", { bg = colors.diff.delete, fg = colors.red })
-  hl("RenderMarkdownH2Bg", { bg = colors.bg_highlight, fg = colors.cyan })
-  hl("RenderMarkdownH3Bg", { bg = colors.diff.add, fg = colors.green })
+  hl("RenderMarkdownH1Bg", { bg = colors.diff.delete, fg = colors.magenta1 })
+  hl("RenderMarkdownH2Bg", { bg = colors.bg_highlight, fg = colors.dark_cyan })
+  hl("RenderMarkdownH3Bg", { bg = colors.diff.add, fg = colors.dark_green })
   hl("RenderMarkdownH4Bg", { bg = colors.bg_highlight, fg = colors.green })
   hl("RenderMarkdownH5Bg", { bg = colors.bg_highlight, fg = colors.pink })
   hl("RenderMarkdownH6Bg", { bg = colors.bg_highlight, fg = colors.orange })
 
   -- heading foregrounds
-  hl("RenderMarkdownH1", { fg = colors.red, bold = true })
+  hl("RenderMarkdownH1", { fg = colors.magenta3, bold = true })
   hl("@markup.heading.1.markdown", { fg = colors.red, bold = true })
   hl("RenderMarkdownH2", { fg = colors.cyan, bold = true })
   hl("@markup.heading.2.markdown", { fg = colors.cyan, bold = true })
-  hl("RenderMarkdownH3", { bg = colors.diff.add, fg = colors.green })
+  hl("RenderMarkdownH3", { bg = colors.diff.add, fg = colors.bg_dark })
   hl("@markup.heading.3.markdown", { fg = colors.green, bold = true })
   hl("RenderMarkdownH4", { fg = colors.green, bold = true })
   hl("@markup.heading.4.markdown", { fg = colors.green, bold = true })
@@ -78,6 +78,14 @@ local function apply_deferred_highlights()
   hl("MiniPatternsGherkin", { bg = colors.bg_dark, fg = colors.dark3, bold = true })
   hl("MiniHipattersNote", { fg = colors.dark5 })
 
+  -- mini.diff signs
+  hl("MiniDiffSignAdd", { fg = colors.green, bg = "NONE" })
+  hl("MiniDiffSignChange", { fg = colors.dark_green, bg = "NONE" })
+  hl("MiniDiffSignDelete", { fg = colors.purple, bg = "NONE" })
+
+  hl("FidgetNormal", { bg = "NONE", fg = colors.fg_dark })
+  hl("FidgetTitle", { bg = "NONE", fg = colors.green, bold = true })
+
   -- neo-tree
   hl("NeoTreeNormal", { bg = colors.bg_dark })
   hl("NvimTreeOpenedFile", { fg = colors.dark3, bg = colors.cyan })
@@ -130,14 +138,29 @@ local function apply_agentic_highlights()
   hl("AgenticDiffAdd", { bg = nil, fg = colors.dark3 })
   hl("AgenticDiffDeleteWord", { bg = colors.red, fg = colors.bg_dark, bold = true })
   hl("AgenticDiffAddWord", { bg = colors.green, fg = colors.bg_dark, bold = true })
-  hl("AgenticStatusPending", { bg = colors.magenta3, fg = colors.purple })
-  hl("AgenticStatusCompleted", { bg = colors.dark_green, fg = colors.bg_dark })
-  hl("AgenticStatusFailed", { bg = colors.red, fg = colors.bg_dark })
+  hl("AgenticStatusPending", { bg = colors.magenta3, fg = colors.bg_dark })
+  hl("AgenticStatusCompleted", { bg = colors.fg_gutter, fg = colors.green })
+  hl("AgenticStatusFailed", { bg = colors.red, fg = colors.bg_dark, bold = true })
   hl("AgenticCodeBlockFence", { fg = colors.dark_cyan })
-  hl("AgenticTitle", { bg = colors.dark_cyan, fg = colors.bg_dark, bold = true })
+  hl("AgenticTitle", { fg = colors.terminal_black, bg = colors.bg_dark, bold = true })
+
+  -- Spinner highlights: green background with black text for visibility
+  hl("AgenticSpinnerGenerating", { bg = nil, fg = colors.dark_green, bold = true })
+  hl("AgenticSpinnerThinking", { bg = nil, fg = colors.dark_cyan, bold = true })
+  hl("AgenticSpinnerSearching", { bg = colors.dark_green, fg = colors.bg_dark, bold = true })
+  hl("AgenticSpinnerBusy", { bg = colors.dark_green, fg = colors.bg_dark, bold = true })
+end
+
+--- Reload all custom highlight groups. Call via :lua require("shoebox.lazy.ui.colors").reload()
+local function reload()
+  apply_markdown_highlights()
+  apply_deferred_highlights()
+  apply_agentic_highlights()
+  vim.notify("Custom highlights reloaded", vim.log.levels.DEBUG)
 end
 
 return {
+  reload = reload,
   {
     "eldritch-theme/eldritch.nvim",
     lazy = false,
@@ -158,6 +181,11 @@ return {
         hl.SnacksIndentScope = { fg = colors.dark_cyan, bg = nil }
         hl.TabLineSel = { fg = colors.green, bg = colors.green }
         hl.WildMenu = { fg = colors.green, bg = colors.green }
+
+        -- Diff highlights need fg for snacks.gh blend calculations
+        hl.DiffAdd = { bg = colors.diff.add, fg = colors.green }
+        hl.DiffDelete = { bg = colors.diff.delete, fg = colors.red }
+        hl.DiffChange = { bg = colors.diff.change, fg = colors.cyan }
       end,
     },
     init = function()

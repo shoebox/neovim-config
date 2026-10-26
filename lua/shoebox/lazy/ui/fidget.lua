@@ -1,25 +1,28 @@
 return {
-  {
-    "j-hui/fidget.nvim",
-    event = "UIEnter",
-    branch = "main",
-    config = function()
-      require("shoebox.extras.shoeboxfidget").setup_fidget()
-    end,
-    opts = {
-      filter = vim.log.levels.DEBUG,
+  "j-hui/fidget.nvim",
+  lazy = false,
+  opts = {
+    notification = {
       override_vim_notify = true,
+      redirect = false,
       window = {
-        avoid = { "NvimTree" },
-        y_padding = 2,
+        winblend = 0,
+        normal_hl = "FidgetNormal",
+        max_width = 0.30,
       },
-      view = {
-        reflow = true,
-        stack_upwards = false,
-      },
-      progress = {
-        ignore_done_already = true,
-        ignore_empty_message = true,
+      view = { reflow = "hyphenate" },
+    },
+    progress = {
+      display = {
+        done_ttl = 2,
+        progress_style = "DiagnosticInfo",
+        done_style = "DiagnosticOk",
+        group_style = "FidgetTitle",
+        overrides = {
+          ["nvim-lint"] = {
+            name = "nvim-lint",
+          },
+        },
       },
     },
   },

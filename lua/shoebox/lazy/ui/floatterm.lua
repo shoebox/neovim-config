@@ -1,5 +1,4 @@
 function _G.set_terminal_keymaps()
-  print("set terminal keymap")
   local opts = { buffer = 0 }
   vim.keymap.set("t", "<esc>", [[<C-\><C-n>]], opts)
   vim.keymap.set("t", "jk", [[<C-\><C-n>]], opts)
@@ -17,7 +16,11 @@ return {
   {
     "akinsho/toggleterm.nvim",
     init = function()
-      vim.cmd("autocmd! TermOpen term://* lua set_terminal_keymaps()")
+      vim.api.nvim_create_autocmd("TermOpen", {
+        group = vim.api.nvim_create_augroup("ShoeboxToggletermKeymaps", { clear = true }),
+        pattern = "term://*toggleterm#*",
+        callback = set_terminal_keymaps,
+      })
       -- vim.api.nvim_create_user_command("TermOpen", function()
       --   set_terminal_keymaps()
       -- end, { desc = "Sets wincmd to term windows" })

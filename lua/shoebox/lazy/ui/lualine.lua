@@ -1,19 +1,21 @@
 return {
   {
     "nvim-lualine/lualine.nvim",
-    event = "UIEnter",
+    event = "VeryLazy",
     opts = {
       extensions = {
         "lazy",
-        "toggleterm",
-        "neo-tree",
-        "quickfix",
-        "trouble",
+        -- "toggleterm",
+        -- "neo-tree",
+        -- "quickfix",
+        -- "trouble",
       },
       sections = {
-        lualine_a = { { "mode" } },
+        lualine_a = {
+          { "mode" },
+        },
         lualine_b = {
-          { "branch", color = { gui = "bold" }, icon = "" },
+          { "filename", color = { gui = "bold" } },
         },
         lualine_c = {
           {
@@ -25,16 +27,10 @@ return {
               hint = "󰝶 ",
             },
           },
-          { "filename" },
         },
         lualine_x = {},
-        lualine_y = {},
-        lualine_z = {
-          {
-            "datetime",
-            style = " %X",
-          },
-        },
+        lualine_y = { { "branch", icon = "" } },
+        lualine_z = { { "datetime", style = " %X" } },
       },
       options = {
         component_separators = "",

@@ -54,7 +54,7 @@ return {
           },
         },
         close_if_last_window = true,
-        auto_clean_after_session_restore = false,
+        auto_clean_after_session_restore = true, -- drop broken neo-tree buffers restored from a session
         event_handlers = {
           {
             event = "file_opened",
@@ -63,6 +63,7 @@ return {
             end,
           },
         },
+        enable_git_status = true,
         filesystem = {
           follow_current_file = {
             enabled = true,
@@ -98,7 +99,7 @@ return {
                   align = "right",
                   hide_when_expanded = true,
                 },
-                { "git_status", zindex = 10, align = "right", hide_when_expanded = true },
+                { "git_status", zindex = 10, align = "right", hide_when_expanded = false },
                 -- { "file_size", zindex = 10, align = "right" },
                 -- { "type", zindex = 10, align = "right" },
                 -- { "last_modified", zindex = 10, align = "right" },
@@ -123,6 +124,70 @@ return {
           width = 30,
         },
       })
+
+      -- ponytail: follow_current_file has no on-disk existence check, so on session
+      -- restore it reveals deleted buffers and scans their now-missing parent dirs,
+      -- spamming [Neo-tree ERROR] ... ENOENT. Skip follow when the current buffer's
+      -- path no longer exists. Ceiling: depends on the internal filesystem source's
+      -- `follow`; pcall-guarded so a neo-tree API change degrades to the old noisy
+      -- behaviour instead of erroring out.
+      local ok_fs, fs = pcall(require, "neo-tree.sources.filesystem")
+      if ok_fs and type(fs.follow) == "function" then
+        local follow = fs.follow
+        fs.follow = function(...)
+          local name = vim.api.nvim_buf_get_name(0)
+          if name ~= "" and vim.fn.filereadable(name) == 0 and vim.fn.isdirectory(name) == 0 then
+            return false
+          end
+          return follow(...)
+        end
+      end
+
+      -- ponytail: get_items is the single chokepoint for every filesystem scan, but two
+      -- code paths reach it with a directory that was removed on disk and then hit an
+      -- unguarded uv.fs_opendir -> [Neo-tree ERROR] ... ENOENT:
+      --   1. toggle_directory re-expands a saved/restored node whose dir is now gone
+      --      (parent_id points at the missing dir; the existing-dir filter in
+      --      handle_refresh_or_up only runs for parent_id == nil, so it is skipped).
+      --   2. a scan whose root (state.path) no longer exists and did not come through
+      --      _navigate_internal's walk-up (e.g. follow / direct calls).
+      -- Guard both so the tree still opens instead of erroring. Ceiling: depends on the
+      -- fs_scan module's `get_items` signature; pcall-guarded so a neo-tree API change
+      -- degrades to the old noisy behaviour instead of breaking neo-tree.
+      local uv = vim.uv or vim.loop
+      local function is_dir(path)
+        local st = path and uv.fs_stat(path)
+        return st ~= nil and st.type == "directory"
+      end
+      local ok_scan, fs_scan = pcall(require, "neo-tree.sources.filesystem.lib.fs_scan")
+      if ok_scan and type(fs_scan.get_items) == "function" then
+        local get_items = fs_scan.get_items
+        fs_scan.get_items = function(state, parent_id, path_to_reveal, callback, ...)
+          -- A removed expanded folder has nothing left to scan; skip it.
+          if parent_id ~= nil and not is_dir(parent_id) then
+            if type(callback) == "function" then
+              callback()
+            end
+            return
+          end
+          -- Root was removed: walk up to the nearest existing ancestor so the tree
+          -- opens there rather than scanning a missing dir.
+          if parent_id == nil and state and not is_dir(state.path) then
+            local path = state.path
+            while path and not is_dir(path) do
+              local parent = vim.fn.fnamemodify(path, ":h")
+              if not parent or parent == path then
+                break
+              end
+              path = parent
+            end
+            if is_dir(path) then
+              state.path = path
+            end
+          end
+          return get_items(state, parent_id, path_to_reveal, callback, ...)
+        end
+      end
     end,
     dependencies = {
       "nvim-lua/plenary.nvim",
