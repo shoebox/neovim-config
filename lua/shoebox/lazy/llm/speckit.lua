@@ -25,7 +25,7 @@ local function make_keys()
       desc = "Spec Kit - Run constitution",
     },
     {
-      "<leader>ss",
+      "<leader>sp",
       function()
         speckit().run_phase("specify")
       end,

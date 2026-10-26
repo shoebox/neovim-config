@@ -28,43 +28,61 @@ return {
       "nvim-lua/plenary.nvim",
       "nvim-treesitter/nvim-treesitter",
     },
+    enabled = false,
     keys = {
       {
-        "<leader>za",
-        "<cmd>CodeCompanionActions<cr>",
-        mode = { "n", "v", "x" },
-        desc = "Code Companion - Actions",
+        "<C-\\>",
+        function()
+          require("codecompanion").toggle_chat()
+        end,
+        mode = { "n", "v", "i" },
+        desc = "Toggle Code Companion Chat",
       },
       {
-        "<leader>]",
+        "<leader>zx", -- ported from agentic.nvim's cursor-acp session shortcut
+        function()
+          require("codecompanion").chat({ params = { adapter = "cursor_cli" } })
+        end,
         mode = { "n", "v" },
-        "<cmd>CodeCompanionActions<cr>",
-        desc = "Code Companion - Actions",
-      },
-      {
-        "<leader>zc",
-        "<cmd>CodeCompanionChat<cr>",
-        desc = "Code Companion - Chat",
+        desc = "Code Companion - Chat (Cursor CLI)",
       },
     },
     opts = {
       adapters = {
         http = {
           opts = {
-            show_defaults = false,
+            -- Only show adapters we've explicitly configured (was `show_defaults`
+            -- pre-rename; renamed upstream to `show_presets`).
+            show_presets = false,
           },
         },
-      },
-      prompt_library = {
-        markdown = {
-          dirs = {
-            -- vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/",
-            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/codereview/",
-            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/commit/",
-            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/docs/",
-            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/refactoring/",
-            vim.fn.stdpath("config") .. "/lua/shoebox/llm/prompts/unittests/",
-          },
+        acp = {
+          -- Ported from agentic.nvim's acp_providers: Copilot CLI as the
+          -- default agent, with `--allow-all-tools` for parity with the old
+          -- auto-approval behaviour.
+          copilot_acp = function()
+            return require("codecompanion.adapters").extend("copilot_acp", {
+              commands = {
+                default = { "copilot", "--acp", "--stdio", "--allow-all-tools" },
+              },
+              defaults = {
+                -- Let Copilot pick the best model per-request instead of
+                -- pinning to whatever it defaulted to (e.g. Claude Sonnet 5).
+                session_config_options = {
+                  model = "auto",
+                },
+              },
+            })
+          end,
+          -- Ported from agentic.nvim's cursor-acp provider. The installed CLI
+          -- binary is `cursor-agent`, not the newer `agent` the preset assumes.
+          cursor_cli = function()
+            return require("codecompanion.adapters").extend("cursor_cli", {
+              commands = {
+                default = { "cursor-agent", "acp" },
+              },
+            })
+          end,
         },
       },
       display = {
@@ -80,26 +98,16 @@ return {
         },
         chat = {
           window = {
-            show_references = false,
+            position = "right",
             show_header_separator = true,
             show_settings = false,
             width = 0.33,
           },
         },
       },
-      memory = {
-        opts = {
-          chat = {
-            enabled = false,
-          },
-        },
-      },
-      strategies = {
+      interactions = {
         chat = {
-          adapter = {
-            name = "auggie_cli",
-            model = "claude-optus-4-6",
-          },
+          adapter = "cursor_cli",
           keymaps = {
             clear = {
               modes = { n = "gxx" },
@@ -114,6 +122,15 @@ return {
               index = 16,
               callback = "keymaps.debug",
               description = "View debug info",
+            },
+            -- Ported from agentic.nvim's `<localLeader>m` switch_model keymap.
+            -- Reuses the built-in `ga` picker, which lets you choose both the
+            -- agent/adapter (copilot_acp, cursor_cli, auggie_cli...) and model.
+            switch_model = {
+              modes = { n = "<localLeader>m" },
+              index = 15,
+              callback = "keymaps.change_adapter",
+              description = "Switch agent/model",
             },
           },
         },
